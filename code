@@ -1,0 +1,93 @@
+PYTHON CODE EXPENSE TRACKER
+!pip install gradio
+import gradio as gr 
+
+# Expense tracker app were we use linear search and binary search
+transactions = [
+ {"date": "2024-08-01", "amount": 50.0, "description": "Groceries"},
+ {"date": "2024-08-02", "amount": 20.0, "description": "Bus fare"},
+ {"date": "2024-08-03", "amount": 100.0, "description": "Electricity bill"},
+ {"date": "2024-08-04", "amount": 200.0, "description": "New shoes"},
+]
+# linear search for transaction by date
+def search_by_date(target_date):
+  for transaction in transactions:
+    if transaction["date"] == target_date:
+      return transaction
+  return "transaction not found"
+
+#binary search for a pirticular transaction or expense by amount 
+def search_by_amount(traget_amount):
+  transactions.sort(key = lambda x: x["amount"])
+  #in the the transactions array we use the sort method sort 
+  #the amount key value in all the dictonaries in the transactions 
+  # array .and we also use the lambda function which is a small
+  # anonymous function which is used to take any number of arguments
+  # inside the function in this case we are fetching all of the
+  # amount values as arguments 
+  left = 0
+  right = len(transactions) - 1
+
+  while left <= right:
+    mid = (left + right) // 2
+    if transactions[mid]["amount"] == traget_amount:
+      return transactions[mid]
+    elif transactions[mid]["amount"] < traget_amount:
+      left = mid 
+    else:
+      right = mid - 1 
+  return "transactions not found"       
+print(search_by_amount(50.0))
+
+#adding a new expense
+def add_expense(date,amount,description):
+  new_transaction = {"date":date,"amount":amount,"description":description}
+  transactions.append(new_transaction)
+  return "expense added sucessfully!"
+
+# checking amount by description
+def total_spent_by_description(description):
+  total_spent = sum(transaction["amount"] for transaction in transactions if transaction["description"].lower() == description.lower())
+  if total_spent > 0:
+    return{"Description :" : description, "total_spent: ": total_spent} 
+  else:
+    return "No Expenses were found for this description in the transactions" 
+# displaying all of the expenses 
+
+def display_all_expenses():
+  if transactions:
+    return transactions
+  else:
+    return "no transactions available" 
+
+# building a gradio interface for our expense tracker application 
+with gr.Blocks() as demo:
+  gr.Markdown("# Expense Tracker")
+
+  with gr.Tab("Search By Date"):
+    date_input = gr.Textbox(label = "Enter Date (YYYY-MM-DD)")
+    # json is javascript object notation which is a text based format of storing strings
+    date_output = gr.JSON(label="Result")
+    gr.Button("Search").click(fn=search_by_date, inputs=date_input ,outputs = date_output)
+  
+  with gr.Tab("Search By Amount"):
+    amount_input = gr.Number(label = "Enter amount")
+    # json is javascript object notation which is a text based format of storing strings
+    amount_output = gr.JSON(label="Result")
+    gr.Button("Search").click(fn=search_by_amount, inputs=amount_input ,outputs=amount_output)
+  
+  with gr.Tab("Add a new Expense"):
+    date_input = gr.Textbox(label = "Enter Date (YYYY-MM-DD)")
+    amount_input = gr.Number(label = "Enter amount")
+    description_input = gr.Textbox(label="enter the description")
+    add_output = gr.Textbox(label = "status")
+    gr.Button("Add Expense").click(fn=add_expense,inputs=[date_input,amount_input,description_input],outputs=add_output)
+   
+  with gr.Tab("Display All Expenses"):
+    all_expenses_output = gr.JSON(label="All Expenses")
+    gr.Button("Show All Expenses").click(fn=display_all_expenses, outputs=all_expenses_output)
+
+
+
+demo.launch()
+	
